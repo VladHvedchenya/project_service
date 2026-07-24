@@ -44,7 +44,7 @@ public class Stage {
     private Project project;
 
     @OneToMany(mappedBy = "stage", cascade = CascadeType.ALL)
-    private List<StageRoles> stageRoles;
+    private List<StageRole> stageRoles;
 
     @OneToMany(cascade = CascadeType.MERGE)
     @JoinColumn(name = "stage_id")

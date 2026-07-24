@@ -24,7 +24,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class StageRoles {
+public class StageRole {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

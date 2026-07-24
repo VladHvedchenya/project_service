@@ -4,6 +4,7 @@ import faang.school.projectservice.model.Project;
 import faang.school.projectservice.model.ProjectVisibility;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -16,6 +17,15 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     )
     boolean existsByOwnerIdAndName(Long ownerId, String name);
 
-    List<Project> findAccessibleProjects(Long userId, ProjectVisibility projectVisibility);
+    @Query("""
+                SELECT p FROM Project p
+                LEFT JOIN p.teams t
+                LEFT JOIN t.teamMembers tm
+                WHERE p.visibility = :visibility
+                OR tm.userId = :userId
+            """)
+    List<Project> findAccessibleProjects(
+            @Param("userId") Long userId,
+            @Param("visibility") ProjectVisibility visibility
+    );
 }
-
