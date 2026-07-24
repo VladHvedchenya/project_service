@@ -723,4 +723,9 @@ public class StageServiceTest {
         verify(stageMapper).toStageDto(stageInDb);
         verifyNoInteractions(stageInvitationService);
     }
+
+    @Test
+    void testPipelineShouldFail() {
+        org.junit.jupiter.api.Assertions.fail("Специальный падающий тест для проверки CI пайплайна!");
+    }
 }
