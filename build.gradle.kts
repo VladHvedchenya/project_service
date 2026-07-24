@@ -2,6 +2,39 @@ plugins {
     java
     id("org.springframework.boot") version "3.0.6"
     id("io.spring.dependency-management") version "1.1.0"
+    jacoco
+}
+
+jacoco {
+    toolVersion = "0.8.11"
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+        csv.required.set(false)
+    }
+
+    classDirectories.setFrom(files(classDirectories.files.map {
+        fileTree(it) {
+            exclude(
+                "**/dto/**",
+                "**/entity/**",
+                "**/exception/**",
+                "**/config/**",
+                "**/*MapperImpl.*", // Исключаем имплементации MapStruct
+                "**/*Application.*" // Исключаем главный класс запуска Spring Boot
+            )
+        }
+    }))
+}
+
+tasks.test {
+    useJUnitPlatform()
+    finalizedBy(tasks.jacocoTestReport)
 }
 
 group = "faang.school"

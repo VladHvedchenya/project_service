@@ -65,7 +65,7 @@ public class ProjectServiceImpl implements ProjectService {
 
         return projects.stream()
                 .filter(project -> projectFilterDto.namePattern() == null
-                        || project.getName().contains(projectFilterDto.namePattern().toLowerCase()))
+                        || project.getName().toLowerCase().contains(projectFilterDto.namePattern().toLowerCase()))
                 .filter(project -> projectFilterDto.statusPattern() == null
                         || project.getStatus() == projectFilterDto.statusPattern())
                 .map(projectMapper::toProjectDto)
