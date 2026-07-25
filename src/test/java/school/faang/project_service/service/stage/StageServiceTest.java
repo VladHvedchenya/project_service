@@ -139,7 +139,6 @@ public class StageServiceTest {
         saved.setStageRoles(List.of());
         saved.setExecutors(List.of());
         saved.setTasks(List.of());
-        Stage stage = new Stage();
 
         when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
         when(teamMemberRepository.findByUserIdAndProjectId(userId, projectId)).thenReturn(Optional.of(member));
@@ -280,7 +279,6 @@ public class StageServiceTest {
     }
 
     @Test
-    @DisplayName("Удаление этапа: ошибка, если этап принадлежит другому проекту")
     public void testDeleteStageWithIncorrectProjectId() {
         Long projectId = 1L;
         Long wrongProjectId = 99L;
@@ -310,7 +308,6 @@ public class StageServiceTest {
     }
 
     @Test
-    @DisplayName("Успешное удаление этапа со стратегией CASCADE (задачи очищаются, этап удаляется)")
     public void testDeleteStageWithTasks() {
         Long projectId = 1L;
         Long stageId = 10L;
@@ -332,13 +329,12 @@ public class StageServiceTest {
 
         stageService.deleteStage(projectId, stageId, DeleteStageStrategy.DELETE_WITH_TASKS, userId);
 
-        assertTrue(stage.getTasks().isEmpty(), "Задачи удаляемого этапа должны быть полностью очищены");
+        assertTrue(stage.getTasks().isEmpty());
         verify(stageRepository).delete(stage);
         verifyNoInteractions(stageInvitationService, stageMapper);
     }
 
     @Test
-    @DisplayName("Успешное удаление этапа: стратегия MOVE_TASKS_TO_NEXT переносит задачи на ближайший следующий этап")
     public void testDeleteStageWithMovingTasksToTheNextStage() {
         Long projectId = 1L;
         Long userId = 2L;
@@ -378,14 +374,13 @@ public class StageServiceTest {
 
         stageService.deleteStage(projectId, currentStageId, DeleteStageStrategy.MOVE_TASKS_TO_NEXT, userId);
 
-        assertEquals(2, nextStage.getTasks().size(), "Ближайший следующий этап (ID 20) должен перенять 2 задачи");
-        assertTrue(farStage.getTasks().isEmpty(), "Далекий этап (ID 30) должен остаться пустым");
-        assertTrue(currentStage.getTasks().isEmpty(), "Удаляемый этап должен остаться без задач");
+        assertEquals(2, nextStage.getTasks().size());
+        assertTrue(farStage.getTasks().isEmpty());
+        assertTrue(currentStage.getTasks().isEmpty());
         verify(stageRepository).delete(currentStage);
     }
 
     @Test
-    @DisplayName("Удаление этапа: ошибка MOVE_TASKS_TO_NEXT, если следующего этапа не существует")
     public void testDeleteStageWithMovingTaskToTheNextStageWithNoNextStage() {
         Long projectId = 1L;
         Long userId = 2L;
@@ -416,7 +411,6 @@ public class StageServiceTest {
     }
 
     @Test
-    @DisplayName("Успешное удаление этапа: стратегия MOVE_TASKS_TO_PREVIOUS переносит задачи на ближайший предыдущий этап")
     public void testDeleteStageWithMovingTasksToThePrevious() {
         Long projectId = 1L;
         Long userId = 2L;
@@ -455,14 +449,13 @@ public class StageServiceTest {
 
         stageService.deleteStage(projectId, currentStageId, DeleteStageStrategy.MOVE_TASKS_TO_PREVIOUS, userId);
 
-        assertEquals(1, previousStage.getTasks().size(), "Ближайший предыдущий этап (ID 20) должен забрать задачу");
-        assertTrue(oldStage.getTasks().isEmpty(), "Далекий этап (ID 10) должен остаться пустым");
-        assertTrue(currentStage.getTasks().isEmpty(), "Задачи удаляемого этапа должны быть очищены");
+        assertEquals(1, previousStage.getTasks().size());
+        assertTrue(oldStage.getTasks().isEmpty());
+        assertTrue(currentStage.getTasks().isEmpty());
         verify(stageRepository).delete(currentStage);
     }
 
     @Test
-    @DisplayName("Удаление этапа: ошибка MOVE_TASKS_TO_PREVIOUS, если предыдущего этапа не существует")
     public void testDeleteStageWithMovingTasksWithNoPrevious() {
         Long projectId = 1L;
         Long userId = 2L;
@@ -489,13 +482,12 @@ public class StageServiceTest {
                 () -> stageService.deleteStage(projectId, currentStageId, DeleteStageStrategy.MOVE_TASKS_TO_PREVIOUS, userId)
         );
 
-        assertTrue(exception.getMessage().contains("previous"), "Сообщение об ошибке должно содержать слово 'previous'");
+        assertTrue(exception.getMessage().contains("previous"));
 
         verify(stageRepository, never()).delete(any(Stage.class));
     }
 
     @Test
-    @DisplayName("Обновление этапа: ошибка, если этап не найден в базе данных")
     public void testUpdateStage_StageNotFound_ThrowsEntityNotFoundException() {
         Long projectId = 1L;
         Long stageId = 99L;
@@ -517,7 +509,6 @@ public class StageServiceTest {
     }
 
     @Test
-    @DisplayName("Обновление этапа: ошибка, если этап привязан к другому проекту")
     public void testUpdateStage_WrongProject_ThrowsDataValidationException() {
         Long projectId = 1L;
         Long stageId = 10L;
@@ -546,7 +537,6 @@ public class StageServiceTest {
     }
 
     @Test
-    @DisplayName("Успешное частичное обновление этапа (изменение только имени)")
     public void testUpdateStage_OnlyNameUpdated_Success() {
         Long projectId = 1L;
         Long stageId = 10L;
@@ -579,16 +569,15 @@ public class StageServiceTest {
         StageDto result = stageService.updateStage(projectId, stageId, updateDto, userId);
 
         assertNotNull(result);
-        assertEquals("Только новое имя", stage.getStageName(), "Имя этапа должно измениться");
-        assertEquals(1, stage.getStageRoles().size(), "Список ролей не должен был обнулиться или измениться");
-        assertEquals(1, stage.getExecutors().size(), "Список исполнителей не должен был измениться");
+        assertEquals("Только новое имя", stage.getStageName());
+        assertEquals(1, stage.getStageRoles().size());
+        assertEquals(1, stage.getExecutors().size());
 
         verify(stageInvitationService).processInvitations(stage, userId);
         verify(stageMapper).toStageDto(stage);
     }
 
     @Test
-    @DisplayName("Успешное полное обновление этапа (имя, роли и участники)")
     public void testUpdateStage_FullUpdate_Success() {
         Long projectId = 1L;
         Long stageId = 10L;
@@ -628,11 +617,11 @@ public class StageServiceTest {
         assertNotNull(result);
         assertEquals("Финальная разработка", stage.getStageName());
 
-        assertEquals(1, stage.getStageRoles().size(), "Должна добавиться одна новая роль");
+        assertEquals(1, stage.getStageRoles().size());
         assertEquals(TeamRole.DEVELOPER, stage.getStageRoles().get(0).getTeamRole());
         assertEquals(3, stage.getStageRoles().get(0).getCount());
 
-        assertEquals(2, stage.getExecutors().size(), "В исполнители должны были добавиться 2 участника");
+        assertEquals(2, stage.getExecutors().size());
 
         verify(teamMemberRepository).findAllById(List.of(30L, 40L));
         verify(stageInvitationService).processInvitations(stage, userId);
@@ -640,7 +629,6 @@ public class StageServiceTest {
     }
 
     @Test
-    @DisplayName("Получение этапа по ID: ошибка, если этап не найден в базе данных")
     public void testGetStageById_StageNotFound_ThrowsEntityNotFoundException() {
         Long projectId = 1L;
         Long userId = 2L;
@@ -661,7 +649,6 @@ public class StageServiceTest {
     }
 
     @Test
-    @DisplayName("Получение этапа по ID: ошибка, если этап привязан к другому проекту")
     public void testGetStageById_WrongProject_ThrowsDataValidationException() {
         Long projectId = 1L;
         Long userId = 2L;
@@ -689,7 +676,6 @@ public class StageServiceTest {
     }
 
     @Test
-    @DisplayName("Успешное получение этапа по ID (Happy Path)")
     public void testGetStageById_Success() {
         Long projectId = 1L;
         Long userId = 2L;

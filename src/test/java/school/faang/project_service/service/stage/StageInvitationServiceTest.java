@@ -12,7 +12,6 @@ import faang.school.projectservice.model.stage_invitation.StageInvitationStatus;
 import faang.school.projectservice.repository.StageInvitationRepository;
 import faang.school.projectservice.repository.TeamMemberRepository;
 import faang.school.projectservice.service.stage.StageInvitationServiceImpl;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -35,7 +34,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class StageInvitationServiceImplTest {
+class StageInvitationServiceTest {
 
     @Mock
     private StageInvitationRepository stageInvitationRepository;
@@ -46,7 +45,6 @@ class StageInvitationServiceImplTest {
     private StageInvitationServiceImpl invitationService;
 
     @Test
-    @DisplayName("createInvitation: Успешное создание инвайта (Happy Path)")
     public void testCreateInvitation_Success() {
         Long authorUserId = 1L;
         Long invitedMemberId = 2L;
@@ -74,7 +72,6 @@ class StageInvitationServiceImplTest {
     }
 
     @Test
-    @DisplayName("createInvitation: Ошибка, если автор не найден в БД")
     public void testCreateInvitation_AuthorNotFound_ThrowsException() {
         Long authorUserId = 1L;
         Long invitedMemberId = 2L;
@@ -91,7 +88,6 @@ class StageInvitationServiceImplTest {
     }
 
     @Test
-    @DisplayName("createInvitation: Ошибка, если участник не найден в БД")
     public void testCreateInvitation_MemberNotFound_ThrowsException() {
         Long authorUserId = 1L;
         Long invitedMemberId = 2L;
@@ -109,7 +105,6 @@ class StageInvitationServiceImplTest {
     }
 
     @Test
-    @DisplayName("processInvitations: Успешный расчет и генерация инвайтов (Happy Path)")
     public void testProcessInvitations_Success() {
         Long authorId = 1L;
         Project project = new Project();
@@ -145,7 +140,6 @@ class StageInvitationServiceImplTest {
     }
 
     @Test
-    @DisplayName("processInvitations: Ошибка, если в проекте не хватает людей нужной роли")
     public void testProcessInvitations_NotEnoughMembers_ThrowsException() {
         Long authorId = 1L;
         Project project = new Project();
@@ -176,7 +170,6 @@ class StageInvitationServiceImplTest {
     }
 
     @Test
-    @DisplayName("acceptInvitation: Успешное принятие инвайта и добавление в команду")
     public void testAcceptInvitation_Success() {
         Long userId = 77L;
         Long invitationId = 990L;
@@ -196,13 +189,12 @@ class StageInvitationServiceImplTest {
 
         invitationService.acceptInvitation(userId, invitationId);
 
-        assertEquals(StageInvitationStatus.ACCEPTED, invitation.getStatus(), "Статус должен измениться на ACCEPTED");
-        assertEquals(1, stage.getExecutors().size(), "Юзер должен добавиться в исполнители этапа");
+        assertEquals(StageInvitationStatus.ACCEPTED, invitation.getStatus());
+        assertEquals(1, stage.getExecutors().size());
         assertEquals(invitedMember, stage.getExecutors().get(0));
     }
 
     @Test
-    @DisplayName("acceptInvitation: Ошибка безопасности, если чужой пользователь принимает инвайт")
     public void testAcceptInvitation_AccessForbidden_ThrowsException() {
         Long wrongUserId = 666L;
         Long invitationId = 990L;
@@ -222,7 +214,6 @@ class StageInvitationServiceImplTest {
     }
 
     @Test
-    @DisplayName("acceptInvitation: Ошибка, если инвайт уже был принят ранее")
     public void testAcceptInvitation_AlreadyAccepted_ThrowsException() {
         Long userId = 77L;
         Long invitationId = 990L;
@@ -243,7 +234,6 @@ class StageInvitationServiceImplTest {
     }
 
     @Test
-    @DisplayName("rejectInvitation: Успешное отклонение инвайта")
     public void testRejectInvitation_Success() {
         Long userId = 77L;
         Long invitationId = 990L;
@@ -263,7 +253,6 @@ class StageInvitationServiceImplTest {
     }
 
     @Test
-    @DisplayName("rejectInvitation: Ошибка безопасности, если чужой пользователь пытается отклонить инвайт")
     public void testRejectInvitation_AccessForbidden_ThrowsException() {
         Long wrongUserId = 666L;
         Long invitationId = 990L;
@@ -285,7 +274,6 @@ class StageInvitationServiceImplTest {
     }
 
     @Test
-    @DisplayName("rejectInvitation: Ошибка, если инвайт уже был отклонен ранее")
     public void testRejectInvitation_AlreadyRejected_ThrowsException() {
         Long userId = 77L;
         Long invitationId = 990L;
