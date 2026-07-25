@@ -63,6 +63,7 @@ dependencies {
     implementation("redis.clients:jedis:4.3.2")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     runtimeOnly("org.postgresql:postgresql")
+    testRuntimeOnly("com.h2database:h2")
 
     /**
      * Amazon S3
