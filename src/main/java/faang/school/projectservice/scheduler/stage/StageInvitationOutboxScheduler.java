@@ -2,6 +2,7 @@ package faang.school.projectservice.scheduler.stage;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.projectservice.dto.stage.StageInvitationDto;
+import faang.school.projectservice.dto.stage.StageInvitationEvent;
 import faang.school.projectservice.model.stage_invitation.StageInvitation;
 import faang.school.projectservice.model.stage_invitation.StageInvitationStatus;
 import faang.school.projectservice.repository.StageInvitationRepository;
@@ -20,7 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class StageInvitationOutboxScheduler {
     private final StageInvitationRepository stageInvitationRepository;
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, StageInvitationEvent> redisTemplate;
     private final ObjectMapper objectMapper;
     private static final String INVITATION_CHANNEL = "stage_invitation_channel";
 
