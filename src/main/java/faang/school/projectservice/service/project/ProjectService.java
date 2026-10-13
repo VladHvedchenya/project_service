@@ -5,6 +5,7 @@ import faang.school.projectservice.dto.project.ProjectDto;
 import faang.school.projectservice.dto.project.ProjectFilterDto;
 import faang.school.projectservice.dto.project.UpdateProjectDto;
 import jakarta.validation.Valid;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -84,4 +85,8 @@ public interface ProjectService {
      * @throws org.springframework.security.access.AccessDeniedException    если проект приватный, а пользователь не имеет к нему доступа
      */
     ProjectDto getProjectById(Long projectId, Long userId);
+
+    ProjectDto uploadCoverImage(Long projectId, MultipartFile file, Long userId);
+
+    void deleteCoverImage(Long projectId, Long userId);
 }

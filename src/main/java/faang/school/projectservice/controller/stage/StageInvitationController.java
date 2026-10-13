@@ -21,7 +21,7 @@ public class StageInvitationController {
     public ResponseEntity<Void> acceptInvitation(
             @PathVariable Long invitationId,
             @RequestHeader("x-user-id") Long userId) {
-        log.info("Получен запрос на ПРИНЯТИЕ инвайта ID: {} от пользователя ID: {}", invitationId, userId);
+        log.info("Received request to accept invitation id={} from user id={}", invitationId, userId);
         stageInvitationService.acceptInvitation(userId, invitationId);
         return ResponseEntity.ok().build();
     }
@@ -31,7 +31,7 @@ public class StageInvitationController {
             @PathVariable Long invitationId,
             @RequestHeader("x-user-id") Long userId
     ) {
-        log.info("Получен запрос на ОТКЛОНЕНИЕ инвайта ID: {} от пользователя ID: {}", invitationId, userId);
+        log.info("Received request to reject invitation id={} from user id={}", invitationId, userId);
         stageInvitationService.rejectInvitation(userId, invitationId);
         return ResponseEntity.ok().build();
     }

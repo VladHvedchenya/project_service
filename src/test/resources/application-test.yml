@@ -22,3 +22,8 @@ spring:
     redis:
       host: localhost
       port: 6379
+
+services:
+  s3:
+    isMocked: true
+    bucketName: test-project-bucket
