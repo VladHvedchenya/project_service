@@ -16,10 +16,10 @@ public class StageInvitationCronCleaner {
     @Scheduled(cron = "0 0 0 * * ?")
     @Transactional
     public void cleanRejectedInvitations() {
-        log.info("Cron-робот Хронос запущен: Начинается ночная очистка отклоненных инвайтов...");
+        log.info("Rejected invitation cleanup job started");
 
         int deletedCount = stageInvitationRepository.deleteAllRejectedInvitations();
 
-        log.info("Ночная очистка успешно завершена. Из таблицы stage_invitation удалено: {} записей.", deletedCount);
+        log.info("Rejected invitation cleanup job finished. Deleted {} rows from stage_invitation", deletedCount);
     }
 }

@@ -1,6 +1,7 @@
 package school.faang.project_service.service.project;
 
 import faang.school.projectservice.dto.project.CreateProjectDto;
+import faang.school.projectservice.dto.file.ProcessedFile;
 import faang.school.projectservice.dto.project.ProjectDto;
 import faang.school.projectservice.dto.project.ProjectFilterDto;
 import faang.school.projectservice.dto.project.UpdateProjectDto;
@@ -11,6 +12,8 @@ import faang.school.projectservice.model.Project;
 import faang.school.projectservice.model.ProjectStatus;
 import faang.school.projectservice.model.ProjectVisibility;
 import faang.school.projectservice.repository.ProjectRepository;
+import faang.school.projectservice.service.file.FileStorageService;
+import faang.school.projectservice.service.file.ProjectCoverImageProcessor;
 import faang.school.projectservice.service.project.ProjectServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +21,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -41,6 +45,12 @@ public class ProjectServiceTest {
 
     @Mock
     private ProjectMapper projectMapper;
+
+    @Mock
+    private ProjectCoverImageProcessor coverImageProcessor;
+
+    @Mock
+    private FileStorageService fileStorageService;
 
     @Test
     public void testCreateProjectIfAlreadyExist() {
@@ -78,6 +88,7 @@ public class ProjectServiceTest {
                 1L, "Java",
                 null,
                 userId, null,
+                null,
                 null,
                 null,
                 null);
@@ -143,6 +154,7 @@ public class ProjectServiceTest {
                 null,
                 null,
                 null,
+                null,
                 null
         );
 
@@ -183,6 +195,7 @@ public class ProjectServiceTest {
                 null,
                 null,
                 null,
+                null,
                 null
         );
         ProjectDto secondDto = new ProjectDto(
@@ -190,6 +203,7 @@ public class ProjectServiceTest {
                 null,
                 null,
                 1L,
+                null,
                 null,
                 null,
                 null,
@@ -289,6 +303,7 @@ public class ProjectServiceTest {
                 null,
                 null,
                 null,
+                null,
                 null
         );
         when(projectRepository.findAccessibleProjects(1L, ProjectVisibility.PUBLIC)).thenReturn(projects);
@@ -324,6 +339,7 @@ public class ProjectServiceTest {
                 ProjectStatus.COMPLETED,
                 null,
                 null,
+                null,
                 null
         );
         when(projectRepository.findAccessibleProjects(1L, ProjectVisibility.PUBLIC)).thenReturn(projects);
@@ -336,5 +352,59 @@ public class ProjectServiceTest {
 
         verify(projectRepository).findAccessibleProjects(1L, ProjectVisibility.PUBLIC);
         verify(projectMapper).toProjectDto(second);
+    }
+
+    @Test
+    public void testUploadCoverImage() {
+        Long projectId = 1L;
+        Long userId = 10L;
+        MultipartFile file = org.mockito.Mockito.mock(MultipartFile.class);
+        Project project = new Project();
+        project.setId(projectId);
+        project.setOwnerId(userId);
+        project.setCoverImageId("old-cover");
+        ProcessedFile processedFile = new ProcessedFile(new byte[]{1, 2, 3}, "image/png", "png");
+        ProjectDto expected = new ProjectDto(
+                projectId,
+                null,
+                null,
+                userId,
+                null,
+                null,
+                "new-cover",
+                null,
+                null
+        );
+
+        when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+        when(coverImageProcessor.process(file)).thenReturn(processedFile);
+        when(fileStorageService.upload(processedFile.content(), processedFile.contentType(), processedFile.extension(), "projects/1/cover"))
+                .thenReturn("new-cover");
+        when(projectRepository.save(project)).thenReturn(project);
+        when(projectMapper.toProjectDto(project)).thenReturn(expected);
+
+        ProjectDto actual = projectService.uploadCoverImage(projectId, file, userId);
+
+        assertEquals(expected, actual);
+        assertEquals("new-cover", project.getCoverImageId());
+        verify(fileStorageService).delete("old-cover");
+    }
+
+    @Test
+    public void testDeleteCoverImage() {
+        Long projectId = 1L;
+        Long userId = 10L;
+        Project project = new Project();
+        project.setId(projectId);
+        project.setOwnerId(userId);
+        project.setCoverImageId("cover-key");
+
+        when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+
+        projectService.deleteCoverImage(projectId, userId);
+
+        assertEquals(null, project.getCoverImageId());
+        verify(projectRepository).save(project);
+        verify(fileStorageService).delete("cover-key");
     }
 }

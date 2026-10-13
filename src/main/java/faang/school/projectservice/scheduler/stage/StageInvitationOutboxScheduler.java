@@ -34,7 +34,7 @@ public class StageInvitationOutboxScheduler {
             return;
         }
 
-        log.info("Найдено {} инвайтов для отправки в Redis", invitations.size());
+        log.info("Found {} invitations to deliver to Redis", invitations.size());
 
         for (var invitation : invitations) {
             try {
@@ -49,10 +49,10 @@ public class StageInvitationOutboxScheduler {
                 String jsonMessage = objectMapper.writeValueAsString(invitationDto);
                 redisTemplate.convertAndSend(INVITATION_CHANNEL, jsonMessage);
                 invitation.setStatus(StageInvitationStatus.SENT);
-                log.info("Инвайт ID {} успешно доставлен в Redis", invitation.getId());
+                log.info("Invitation id={} was successfully delivered to Redis", invitation.getId());
             } catch (Exception e) {
-                log.error("Критическая ошибка при отправке инвайта ID {} в Redis." +
-                        " Он будет сохранен в БД для повторной отправки.", invitation.getId(), e);
+                log.error("Failed to deliver invitation id={} to Redis. It will remain in the database for retry",
+                        invitation.getId(), e);
             }
         }
     }

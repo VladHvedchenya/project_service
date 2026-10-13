@@ -12,6 +12,7 @@ public record ProjectDto(
         Long ownerId,
         ProjectStatus status,
         ProjectVisibility visibility,
+        String coverImageId,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
